@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Онлайн ТВ — StarNet / Moldtelecom (PWA + Telegram)</title>
+
+    <!-- PWA манифест и цвета системной панели (Android и iOS) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Онлайн ТВ">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+    <!-- Подключаем файл со стилями -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- SDK Telegram Mini Apps (активируется автоматически при запуске внутри Telegram) -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Библиотека HLS.js для воспроизведения ТВ-потоков (.m3u8) -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+
+    <!-- Шапка сайта с кнопками источников, установкой PWA и вкладкой Избранное -->
+    <header>
+        <div class="header-top">
+            <div class="logo">📺 Онлайн ТВ Плеер</div>
+            <button id="btn-install-pwa" class="install-pwa-btn" onclick="handleInstallClick()" style="display: none;">📲 Установить</button>
+        </div>
+
+        <div class="controls">
+            <!-- Кнопка полного списка каналов StarNet и Moldtelecom -->
+            <button id="btn-provider" onclick="selectCategory('provider')">📡 StarNet / Moldtelecom</button>
+
+            <!-- Кнопки выбора стран и резервных баз -->
+            <button id="btn-md" onclick="selectCategory('md')">🇲🇩 Молдова</button>
+            <button id="btn-ru" onclick="selectCategory('ru')">🇷🇺 Россия</button>
+            <button id="btn-all" onclick="selectCategory('all')">🌍 Все базы</button>
+
+            <!-- Кнопка вкладки Избранное -->
+            <button id="btn-fav" class="fav-tab-btn" onclick="selectCategory('fav')">⭐ Избранное (<span id="favCount">0</span>)</button>
+
+            <!-- Загрузка своего плейлиста по ссылке или файлом -->
+            <div class="playlist-inputs">
+                <input type="text" id="customUrl" placeholder="Ссылка на свой .m3u">
+                <button onclick="loadCustomUrl()">Загрузить</button>
+
+                <input type="file" id="fileInput" accept=".m3u,.m3u8" style="display: none;" onchange="loadLocalFile(event)">
+                <button onclick="document.getElementById('fileInput').click()" title="Загрузить файл .m3u с устройства">📁 Файл</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной рабочий блок: слева каналы, справа плеер -->
+    <div class="main-container">
+        <!-- Левая панель: поиск, фильтр нерабочих и список каналов -->
+        <div class="sidebar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Поиск канала или рубрики..." oninput="renderCurrentList()">
+
+                <!-- Переключатель фильтрации нерабочих потоков -->
+                <div class="filter-controls">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="hideBrokenCheckbox" checked onchange="renderCurrentList()">
+                        Скрывать нерабочие потоки
+                    </label>
+                    <button class="small-btn" onclick="checkVisibleStreams()" title="Проверить доступность первых 15 каналов в списке">⚡ Проверить</button>
+                </div>
+            </div>
+
+            <!-- Список каналов -->
+            <ul class="channel-list" id="channelList">
+                <!-- Сюда JavaScript автоматически добавит каналы -->
+            </ul>
+        </div>
+
+        <!-- Правая панель: видеоплеер и статус канала -->
+        <div class="player-area">
+            <video id="videoPlayer" controls autoplay playsinline webkit-playsinline></video>
+            <div class="status-bar">
+                <span class="status-info" id="statusText">Выберите канал из списка, чтобы начать просмотр</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подсказка установки для iPhone / iPad (iOS Safari) -->
+    <div id="iosInstallModal" class="ios-modal-overlay" onclick="if(event.target === this) closeIosInstallModal()">
+        <div class="ios-modal">
+            <h3>📲 Установка на iPhone / iPad</h3>
+            <p>В Safari нажмите кнопку <strong>«Поделиться»</strong> (квадрат со стрелкой вверх внизу экрана), а затем выберите <strong>«На экран „Домой“»</strong>.</p>
+            <button onclick="closeIosInstallModal()">Понятно</button>
+        </div>
+    </div>
+
+    <!-- Подключаем файл с логикой на JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
